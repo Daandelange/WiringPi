@@ -222,7 +222,8 @@ static int sysFds [64] =
 
 // ISR Data
 
-static void (*isrFunctions [64])(void) ;
+static void (*isrFunctions [64])(int, void*) ;
+static void (*isrUserdata [64])(int) ;
 
 
 // Doing it the Arduino way with lookup tables...
@@ -1309,8 +1310,10 @@ static void *interruptHandler (void *arg)
   pinPass = -1 ;
 
   for (;;)
-    if (waitForInterrupt (myPin, -1) > 0)
-      isrFunctions [myPin] () ;
+    if (waitForInterrupt (myPin, -1) > 0){
+		if( isrFunctions [myPin] != NULL ) isrFunctions [myPin] (myPin, isrUserdata [myPin]);
+		else wiringPiFailure (WPI_MODE_GPIO, "wiringPiISR: [interruptHandler] interrupt on pin (%d) not initialized.\n", myPin) ;
+	}
 
   return NULL ;
 }
@@ -1324,7 +1327,7 @@ static void *interruptHandler (void *arg)
  *********************************************************************************
  */
 
-int wiringPiISR (int pin, int mode, void (*function)(void))
+int wiringPiISRExtended (int pin, int mode, void (*function)(int, void*), void* user_data)
 {
   pthread_t threadId ;
   const char *modeS ;
@@ -1393,6 +1396,7 @@ int wiringPiISR (int pin, int mode, void (*function)(void))
     read (sysFds [bcmGpioPin], &c, 1) ;
 
   isrFunctions [pin] = function ;
+  isrUserdata [pin] = user_data;
 
   pthread_mutex_lock (&pinMutex) ;
     pinPass = pin ;
@@ -1402,6 +1406,10 @@ int wiringPiISR (int pin, int mode, void (*function)(void))
   pthread_mutex_unlock (&pinMutex) ;
 
   return 0 ;
+}
+
+int wiringPiISR (int pin, int mode, void (*function)(int, void*)){
+	return wiringPiISRExtended(pin, mode, function, NULL);
 }
 
 

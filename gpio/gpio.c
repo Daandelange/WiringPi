@@ -413,7 +413,7 @@ void doExport (int argc, char *argv [])
  *********************************************************************************
  */
 
-static void wfi (void)
+static void wfi (int bla, void* bli)
   { exit (0) ; }
 
 void doWfi (int argc, char *argv [])
