@@ -1,8 +1,8 @@
 /*
- * rht03.c:
- *	Driver for the MaxDetect series sensors
- *
- * Copyright (c) 2012-2013 Gordon Henderson. <projects@drogon.net>
+ * extensions.h:
+ *	Part of the GPIO program to test, peek, poke and otherwise
+ *	noodle with the GPIO hardware on the Raspberry Pi.
+ *	Copyright (c) 2012-2015 Gordon Henderson
  ***********************************************************************
  * This file is part of wiringPi:
  *	https://projects.drogon.net/raspberry-pi/wiringpi/
@@ -22,48 +22,5 @@
  ***********************************************************************
  */
 
-#include <stdio.h>
 
-#include <wiringPi.h>
-#include <maxdetect.h>
-
-#define	RHT03_PIN	0
-
-/*
- ***********************************************************************
- * The main program
- ***********************************************************************
- */
-
-int main (void)
-{
-  int temp, rh ;
-  int newTemp, newRh ;
-
-  temp = rh = newTemp = newRh = 0 ;
-
-  wiringPiSetup () ;
-  piHiPri       (55) ;
-
-  for (;;)
-  {
-    delay (100) ;
-
-    if (!readRHT03 (RHT03_PIN, &newTemp, &newRh))
-      continue ;
-
-    if ((temp != newTemp) || (rh != newRh))
-    {
-      temp = newTemp ;
-      rh   = newRh ;
-      if ((temp & 0x8000) != 0)	// Negative
-      {
-	temp &= 0x7FFF ;
-	temp = -temp ;
-      }
-      printf ("Temp: %5.1f, RH: %5.1f%%\n", temp / 10.0, rh / 10.0) ;
-    }
-  }
-
-  return 0 ;
-}
+extern int loadWPiExtension (char *progName, char *extensionData, int verbose) ;

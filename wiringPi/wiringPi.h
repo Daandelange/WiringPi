@@ -26,8 +26,7 @@
 
 // Handy defines
 
-// Deprecated
-#define	NUM_PINS	17
+// wiringPi modes
 
 #define	WPI_MODE_PINS		 0
 #define	WPI_MODE_GPIO		 1
@@ -42,6 +41,9 @@
 #define	OUTPUT			 1
 #define	PWM_OUTPUT		 2
 #define	GPIO_CLOCK		 3
+#define	SOFT_PWM_OUTPUT		 4
+#define	SOFT_TONE_OUTPUT	 5
+#define	PWM_TONE_OUTPUT		 6
 
 #define	LOW			 0
 #define	HIGH			 1
@@ -63,6 +65,38 @@
 #define	INT_EDGE_FALLING	1
 #define	INT_EDGE_RISING		2
 #define	INT_EDGE_BOTH		3
+
+// Pi model types and version numbers
+//	Intended for the GPIO program Use at your own risk.
+
+#define	PI_MODEL_A		0
+#define	PI_MODEL_B		1
+#define	PI_MODEL_AP		2
+#define	PI_MODEL_BP		3
+#define	PI_MODEL_2		4
+#define	PI_ALPHA		5
+#define	PI_MODEL_CM		6
+#define	PI_MODEL_07		7
+#define	PI_MODEL_08		8
+#define	PI_MODEL_ZERO		9
+
+#define	PI_VERSION_1		0
+#define	PI_VERSION_1_1		1
+#define	PI_VERSION_1_2		2
+#define	PI_VERSION_2		3
+
+#define	PI_MAKER_SONY		0
+#define	PI_MAKER_EGOMAN		1
+#define	PI_MAKER_MBEST		2
+#define	PI_MAKER_UNKNOWN	3
+
+extern const char *piModelNames    [16] ;
+extern const char *piRevisionNames [16] ;
+extern const char *piMakerNames    [16] ;
+extern const int   piMemorySize    [ 8] ;
+
+
+//	Intended for the GPIO program Use at your own risk.
 
 // Threads
 
@@ -115,6 +149,8 @@ extern struct wiringPiNodeStruct *wiringPiNodes ;
 extern "C" {
 #endif
 
+// Data
+
 // Internal
 
 extern int wiringPiFailure (int fatal, const char *message, ...) ;
@@ -147,10 +183,12 @@ extern int  wiringPiSetupPiFaceForGpioProg (void) ;	// Don't use this - for gpio
 // On-Board Raspberry Pi hardware specific stuff
 
 extern int  piBoardRev          (void) ;
+extern void piBoardId           (int *model, int *rev, int *mem, int *maker, int *overVolted) ;
 extern int  wpiPinToGpio        (int wpiPin) ;
 extern int  physPinToGpio       (int physPin) ;
 extern void setPadDrive         (int group, int value) ;
 extern int  getAlt              (int pin) ;
+extern void pwmToneWrite        (int pin, int freq) ;
 extern void digitalWriteByte    (int value) ;
 extern void pwmSetMode          (int mode) ;
 extern void pwmSetRange         (unsigned int range) ;

@@ -1,8 +1,8 @@
 /*
- * rht03.c:
- *	Driver for the MaxDetect series sensors
+ * max31855.c:
+ *	SPI Thermocouple interface chip
  *
- * Copyright (c) 2012-2013 Gordon Henderson. <projects@drogon.net>
+ * Copyright (c) 2015 Gordon Henderson.
  ***********************************************************************
  * This file is part of wiringPi:
  *	https://projects.drogon.net/raspberry-pi/wiringpi/
@@ -23,47 +23,38 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <time.h>
 
 #include <wiringPi.h>
-#include <maxdetect.h>
+#include <max31855.h>
 
-#define	RHT03_PIN	0
-
-/*
- ***********************************************************************
- * The main program
- ***********************************************************************
- */
-
-int main (void)
+int main (int argc, char *argv [])
 {
-  int temp, rh ;
-  int newTemp, newRh ;
-
-  temp = rh = newTemp = newRh = 0 ;
+  int i = 0 ;
 
   wiringPiSetup () ;
-  piHiPri       (55) ;
+  max31855Setup (200, 0) ;
+  max31855Setup (400, 1) ;
 
   for (;;)
   {
-    delay (100) ;
-
-    if (!readRHT03 (RHT03_PIN, &newTemp, &newRh))
-      continue ;
-
-    if ((temp != newTemp) || (rh != newRh))
+    if (i == 0)
     {
-      temp = newTemp ;
-      rh   = newRh ;
-      if ((temp & 0x8000) != 0)	// Negative
-      {
-	temp &= 0x7FFF ;
-	temp = -temp ;
-      }
-      printf ("Temp: %5.1f, RH: %5.1f%%\n", temp / 10.0, rh / 10.0) ;
+      printf ("+------+------+------+------++------+------+------+------+\n") ;
+      printf ("| Raw  | Err  |  C   |   F  || Raw  | Err  |  C   |  F   |\n") ;
+      printf ("+------+------+------+------++------+------+------+------+\n") ;
     }
+
+    printf ("| %4d | %4d | %4d | %4d |",   analogRead (200), analogRead (201), analogRead (202), analogRead (203)) ;
+    printf ("| %4d | %4d | %4d | %4d |\n", analogRead (400), analogRead (401), analogRead (402), analogRead (403)) ;
+    delay (500) ;
+
+    if (++i == 10)
+      i = 0 ;
+
   }
 
-  return 0 ;
 }

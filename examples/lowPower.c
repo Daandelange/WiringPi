@@ -1,8 +1,12 @@
 /*
- * rht03.c:
- *	Driver for the MaxDetect series sensors
+ * lowPower.c:
+ *	Check the Pi's LOW-Power signal.
  *
- * Copyright (c) 2012-2013 Gordon Henderson. <projects@drogon.net>
+ *	This is a demonstration program that could be turned into some sort
+ *	of logger via e.g. syslog - however it's also probably something
+ *	that might be better handled by a future kernel - who knows.
+ *
+ * Copyright (c) 2014 Gordon Henderson.
  ***********************************************************************
  * This file is part of wiringPi:
  *	https://projects.drogon.net/raspberry-pi/wiringpi/
@@ -23,47 +27,42 @@
  */
 
 #include <stdio.h>
-
+#include <time.h>
 #include <wiringPi.h>
-#include <maxdetect.h>
 
-#define	RHT03_PIN	0
+
+#define	LOW_POWER	35
 
 /*
- ***********************************************************************
- * The main program
- ***********************************************************************
+ * lowPower:
+ *	This is an ISR that waits for the low-power signal going low and
+ *	prints the result.
+ *********************************************************************************
+ */
+
+void lowPower (void)
+{
+  time_t t ;
+
+  time (&t) ;
+  printf ("%s: LOW POWER DETECTED\n", ctime (&t)) ;
+}
+
+
+/*
+ *********************************************************************************
+ * main
+ *********************************************************************************
  */
 
 int main (void)
 {
-  int temp, rh ;
-  int newTemp, newRh ;
+  wiringPiSetupGpio () ;	// GPIO mode as it's an internal pin
 
-  temp = rh = newTemp = newRh = 0 ;
-
-  wiringPiSetup () ;
-  piHiPri       (55) ;
+  wiringPiISR (LOW_POWER, INT_EDGE_FALLING, &lowPower) ;
 
   for (;;)
-  {
-    delay (100) ;
-
-    if (!readRHT03 (RHT03_PIN, &newTemp, &newRh))
-      continue ;
-
-    if ((temp != newTemp) || (rh != newRh))
-    {
-      temp = newTemp ;
-      rh   = newRh ;
-      if ((temp & 0x8000) != 0)	// Negative
-      {
-	temp &= 0x7FFF ;
-	temp = -temp ;
-      }
-      printf ("Temp: %5.1f, RH: %5.1f%%\n", temp / 10.0, rh / 10.0) ;
-    }
-  }
+    delay (1000) ;
 
   return 0 ;
 }
